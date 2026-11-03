@@ -59,6 +59,26 @@ Add to `claude_desktop_config.json`:
 }
 ```
 
+### Without uv: pipx
+
+```bash
+pipx install amr-mcp
+which amr-mcp   # e.g. /Users/you/.local/bin/amr-mcp
+```
+
+Then use that absolute path as the command, for example in `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "amr": { "command": "/Users/you/.local/bin/amr-mcp" }
+  }
+}
+```
+
+Desktop apps don't inherit your shell's `PATH`, so if Claude Desktop can't start the server,
+use the absolute path for the command (this applies to `uvx` too: run `which uvx` to get it).
+
 ## Configuration
 
 | Variable | Purpose |
