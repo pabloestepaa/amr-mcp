@@ -16,6 +16,13 @@ An [MCP](https://modelcontextprotocol.io) server that lets AI assistants (Claude
 
 All data sources are public domain or freely accessible; no API keys are required.
 
+## Demo
+
+Claude Code answering the first example question below: the server searches the catalog, pulls the
+KPC-2 sequence from NCBI and resolves the original PubMed reference.
+
+![amr-mcp answering a question about carbapenemases in Klebsiella pneumoniae](https://raw.githubusercontent.com/pabloestepaa/amr-mcp/main/docs/demo.gif)
+
 ## Example questions
 
 > Which carbapenemases are reported in *Klebsiella pneumoniae*, and what is the original paper for KPC-2?
