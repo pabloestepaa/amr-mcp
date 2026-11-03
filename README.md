@@ -89,6 +89,20 @@ Then use that absolute path as the command, for example in `claude_desktop_confi
 Desktop apps don't inherit your shell's `PATH`, so if Claude Desktop can't start the server,
 use the absolute path for the command (this applies to `uvx` too: run `which uvx` to get it).
 
+### Agent skill (optional)
+
+[`skills/amr-research/SKILL.md`](https://github.com/pabloestepaa/amr-mcp/blob/main/skills/amr-research/SKILL.md) tells the agent when to reach for these
+tools and how to chain them (gene → hosts → sequence → paper, family overviews, genome screening),
+plus the pitfalls to avoid. It works with any agent that reads `SKILL.md` files (Claude Code, Cursor,
+Codex, Copilot…):
+
+```bash
+npx skills add pabloestepaa/amr-mcp
+```
+
+Or copy the folder by hand, e.g. to `~/.claude/skills/amr-research/` for Claude Code.
+The skill uses the MCP server above, so install that too.
+
 ## Configuration
 
 | Variable | Purpose |
