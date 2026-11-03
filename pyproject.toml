@@ -11,6 +11,7 @@ license = "MIT"
 requires-python = ">=3.10"
 keywords = ["mcp", "bioinformatics", "antimicrobial-resistance", "amr", "ncbi", "uniprot"]
 classifiers = [
+  "Development Status :: 4 - Beta",
   "Programming Language :: Python :: 3",
   "Topic :: Scientific/Engineering :: Bio-Informatics",
   "Intended Audience :: Science/Research",
