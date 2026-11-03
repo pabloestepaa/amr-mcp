@@ -86,3 +86,7 @@ UniProt data is available under CC BY 4.0. Please cite the original sources when
 ## License
 
 MIT
+
+---
+
+Developed with AI assistance (Claude Code); all code reviewed and tested by the author.
