@@ -1,5 +1,10 @@
 # amr-mcp
 
+<!-- mcp-name: io.github.pabloestepaa/amr-mcp -->
+
+[![CI](https://github.com/pabloestepaa/amr-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/pabloestepaa/amr-mcp/actions/workflows/ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/amr-mcp)](https://pypi.org/project/amr-mcp/)
+
 An [MCP](https://modelcontextprotocol.io) server that lets AI assistants (Claude, Codex, Cursor…) query
 **antimicrobial resistance (AMR)** data from public, free sources:
 
@@ -34,14 +39,12 @@ All data sources are public domain or freely accessible; no API keys are require
 
 ## Installation
 
-```bash
-pip install git+https://github.com/pabloestepaa/amr-mcp
-```
+Run it with [uv](https://docs.astral.sh/uv/) (no install step needed), or `pip install amr-mcp`.
 
 ### Claude Code
 
 ```bash
-claude mcp add amr -- amr-mcp
+claude mcp add amr -- uvx amr-mcp
 ```
 
 ### Claude Desktop
@@ -51,7 +54,7 @@ Add to `claude_desktop_config.json`:
 ```json
 {
   "mcpServers": {
-    "amr": { "command": "amr-mcp" }
+    "amr": { "command": "uvx", "args": ["amr-mcp"] }
   }
 }
 ```

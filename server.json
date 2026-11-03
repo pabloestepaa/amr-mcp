@@ -1,0 +1,34 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.pabloestepaa/amr-mcp",
+  "title": "AMR (antimicrobial resistance)",
+  "description": "Antimicrobial resistance genes, sequences and literature from NCBI and UniProt",
+  "repository": {
+    "url": "https://github.com/pabloestepaa/amr-mcp",
+    "source": "github"
+  },
+  "version": "0.1.0",
+  "packages": [
+    {
+      "registryType": "pypi",
+      "identifier": "amr-mcp",
+      "version": "0.1.0",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "NCBI_API_KEY",
+          "description": "Optional free NCBI API key; raises the rate limit from 3 to 10 requests/s",
+          "isRequired": false,
+          "isSecret": true
+        },
+        {
+          "name": "NCBI_EMAIL",
+          "description": "Optional contact e-mail sent to NCBI with each request",
+          "isRequired": false
+        }
+      ]
+    }
+  ]
+}
