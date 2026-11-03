@@ -22,7 +22,9 @@ INSTRUCTIONS = """\
 Tools for antimicrobial resistance (AMR) research backed by public databases:
 the NCBI Reference Gene Catalog (the AMRFinderPlus database), NCBI E-utilities and UniProt.
 Typical flow: search_amr_genes or get_amr_gene -> fetch_sequence with the RefSeq accession
--> get_pubmed_references with the pubmed_reference IDs. Drug classes are upper-case
+-> get_pubmed_references with the pubmed_reference IDs. The catalog says what a gene is, not
+where it occurs: for the species that carry a gene, call get_protein_hosts with its RefSeq
+protein accession. Use group_by_family for broad searches. Drug classes are upper-case
 (e.g. BETA-LACTAM, AMINOGLYCOSIDE); call list_drug_classes to see them all.
 """
 
@@ -90,14 +92,22 @@ async def search_amr_genes(
     drug_class: Annotated[str | None, Field(description="e.g. BETA-LACTAM, COLISTIN, AMINOGLYCOSIDE")] = None,
     subclass: Annotated[str | None, Field(description="e.g. CARBAPENEM, CEPHALOSPORIN")] = None,
     organism: Annotated[
-        str | None, Field(description="Restrict to entries valid for this organism, e.g. 'Klebsiella pneumoniae'")
+        str | None,
+        Field(
+            description="Drop entries the catalog restricts to other taxa, e.g. 'Klebsiella pneumoniae'. "
+            "Most acquired genes have no restriction, so this does not show where a gene has been found: "
+            "use get_protein_hosts for that"
+        ),
     ] = None,
     element_type: Annotated[Literal["AMR", "STRESS", "VIRULENCE"] | None, Field(description="Element type")] = None,
-    limit: Annotated[int, Field(ge=1, le=200)] = 25,
+    limit: Annotated[int, Field(ge=1, le=200, description="Max entries, or max families when grouping")] = 25,
+    group_by_family: Annotated[
+        bool, Field(description="Return one row per gene family with its entry count; use for broad searches")
+    ] = False,
 ) -> dict[str, Any]:
     """Search the NCBI Reference Gene Catalog of AMR, stress and virulence genes and point mutations."""
     catalog = await state.get_catalog()
-    return catalog.search(query, drug_class, subclass, organism, element_type, limit)
+    return catalog.search(query, drug_class, subclass, organism, element_type, limit, group_by_family)
 
 
 @mcp.tool(annotations=READ_ONLY)
@@ -120,6 +130,16 @@ async def fetch_sequence(
 ) -> dict[str, Any]:
     """Fetch a protein or nucleotide sequence from NCBI in FASTA form."""
     return await state.ncbi.fetch_fasta(accession, kind)
+
+
+@mcp.tool(annotations=READ_ONLY)
+@_user_errors
+async def get_protein_hosts(
+    accession: Annotated[str, Field(description="Protein accession, ideally the catalog's RefSeq WP_ one, e.g. WP_004199234.1")],
+    top: Annotated[int, Field(ge=1, le=50)] = 15,
+) -> dict[str, Any]:
+    """Species in which NCBI has sequenced this exact protein (Identical Protein Groups), with record counts."""
+    return await state.ncbi.protein_hosts(accession, top)
 
 
 @mcp.tool(annotations=READ_ONLY)

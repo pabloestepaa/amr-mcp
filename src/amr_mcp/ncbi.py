@@ -10,6 +10,7 @@ import asyncio
 import os
 import re
 import time
+from collections import Counter
 
 import httpx
 
@@ -71,6 +72,16 @@ class NCBIClient:
             "sequence": seq[:MAX_SEQUENCE_CHARS],
         }
 
+    async def protein_hosts(self, accession: str, top: int = 15) -> dict:
+        """Organisms carrying this exact protein, from NCBI Identical Protein Groups."""
+        accession = accession.strip().upper()
+        if not ACCESSION_RE.match(accession):
+            raise ValueError(f"'{accession}' does not look like an NCBI accession")
+        resp = await self._get(
+            "efetch.fcgi", {"db": "ipg", "id": accession, "rettype": "ipg", "retmode": "text"}
+        )
+        return summarize_ipg(accession, resp.text, top)
+
     async def pubmed_summaries(self, pmids: list[str]) -> list[dict]:
         ids = [p.strip() for p in pmids if p.strip().isdigit()]
         if not ids:
@@ -97,3 +108,34 @@ class NCBIClient:
                 }
             )
         return out
+
+
+def summarize_ipg(accession: str, report: str, top: int = 15) -> dict:
+    """Count IPG report rows by species. Rows are sequence records, one per contig or plasmid."""
+    lines = report.strip().splitlines()
+    if not lines or not lines[0].startswith("Id\t"):
+        raise ValueError(f"NCBI has no identical protein group for {accession}")
+    header = lines[0].split("\t")
+    org_col, nuc_col = header.index("Organism"), header.index("Nucleotide Accession")
+    species: Counter[str] = Counter()
+    records = set()
+    for line in lines[1:]:
+        cols = line.split("\t")
+        if len(cols) <= max(org_col, nuc_col):
+            continue
+        records.add(cols[nuc_col])
+        # "Klebsiella pneumoniae subsp. pneumoniae" counts as Klebsiella pneumoniae.
+        species[" ".join(cols[org_col].split()[:2])] += 1
+    total = sum(species.values())
+    return {
+        "accession": accession,
+        "source": "NCBI Identical Protein Groups",
+        "note": "Counts are sequence records in NCBI, so they reflect sequencing effort as well as prevalence.",
+        "total_records": total,
+        "nucleotide_records": len(records),
+        "species_count": len(species),
+        "top_species": [
+            {"species": s, "records": n, "percent": round(100 * n / total, 1)}
+            for s, n in species.most_common(top)
+        ],
+    }

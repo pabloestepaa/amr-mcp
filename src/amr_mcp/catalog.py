@@ -82,6 +82,7 @@ class Catalog:
         organism: str | None = None,
         element_type: str | None = None,
         limit: int = 25,
+        group_by_family: bool = False,
     ) -> dict:
         q = query.lower() if query else None
         organism_key = organism.replace(" ", "_").lower() if organism else None
@@ -107,6 +108,25 @@ class Catalog:
             return True
 
         hits = [r for r in self.rows if matches(r)]
+        if group_by_family:
+            families: dict[str, list[dict[str, str]]] = {}
+            for r in hits:
+                families.setdefault(r["gene_family"], []).append(r)
+            ranked = sorted(families.items(), key=lambda kv: -len(kv[1]))
+            return {
+                "total_matches": len(hits),
+                "family_count": len(families),
+                "returned": min(len(families), limit),
+                "families": [
+                    {
+                        "gene_family": fam,
+                        "entries": len(rows),
+                        "example": rows[0]["allele"] or rows[0]["product_name"],
+                        "subclasses": sorted({r["subclass"] for r in rows if r["subclass"]}),
+                    }
+                    for fam, rows in ranked[:limit]
+                ],
+            }
         return {
             "total_matches": len(hits),
             "returned": min(len(hits), limit),

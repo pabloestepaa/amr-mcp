@@ -16,6 +16,7 @@ EXPECTED_TOOLS = {
     "search_amr_genes",
     "get_amr_gene",
     "fetch_sequence",
+    "get_protein_hosts",
     "get_pubmed_references",
     "search_uniprot",
     "get_uniprot_entry",

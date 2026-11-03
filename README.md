@@ -18,14 +18,16 @@ All data sources are public domain or freely accessible; no API keys are require
 
 ## Demo
 
-Claude Code answering the first example question below: the server searches the catalog, pulls the
-KPC-2 sequence from NCBI and resolves the original PubMed reference.
+Claude Code answering the first example question below: the server looks up blaKPC-2 in the catalog,
+counts the species NCBI has found it in, pulls the protein sequence and resolves the original paper.
 
-![amr-mcp answering a question about carbapenemases in Klebsiella pneumoniae](https://raw.githubusercontent.com/pabloestepaa/amr-mcp/main/docs/demo.gif)
+![amr-mcp answering a question about the KPC-2 carbapenemase](https://raw.githubusercontent.com/pabloestepaa/amr-mcp/main/docs/demo.gif)
 
 ## Example questions
 
-> Which carbapenemases are reported in *Klebsiella pneumoniae*, and what is the original paper for KPC-2?
+> Which species carry the KPC-2 carbapenemase, what is the original paper describing it, and what does its protein sequence look like?
+
+> Summarise the carbapenemase gene families in the catalog and how many variants each has.
 
 > Give me the protein sequence of mcr-1.1 and its UniProt function annotation.
 
@@ -35,11 +37,12 @@ KPC-2 sequence from NCBI and resolves the original PubMed reference.
 
 | Tool | What it does |
 |---|---|
-| `search_amr_genes` | Search by text, drug class, subclass, organism or element type |
+| `search_amr_genes` | Search by text, drug class, subclass, organism or element type; `group_by_family` for broad searches |
 | `get_amr_gene` | Exact record for an allele (`blaKPC-2`) or summary of a family (`blaKPC`) |
 | `list_drug_classes` | Drug classes and how many catalog entries each has |
 | `catalog_info` | Catalog version and size |
 | `fetch_sequence` | Protein or nucleotide FASTA from NCBI by accession |
+| `get_protein_hosts` | Species in which NCBI has sequenced an exact protein (Identical Protein Groups) |
 | `get_pubmed_references` | Title, journal, authors and DOI for PubMed IDs |
 | `search_uniprot` / `get_uniprot_entry` | UniProtKB search and entry details |
 | `run_amrfinder` | Run a local AMRFinderPlus install on a FASTA file |

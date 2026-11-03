@@ -41,6 +41,14 @@ def test_search_by_class_and_type(catalog):
     assert catalog.search(element_type="VIRULENCE")["total_matches"] == 1
 
 
+def test_group_by_family(catalog):
+    result = catalog.search(drug_class="beta-lactam", group_by_family=True)
+    assert result["total_matches"] == 3
+    assert result["families"] == [
+        {"gene_family": "blaKPC", "entries": 3, "example": "blaKPC-2", "subclasses": ["CARBAPENEM"]}
+    ]
+
+
 def test_organism_whitelist(catalog):
     # Acinetobacter-only point mutation is excluded for E. coli but included for A. baumannii.
     assert "adeL_G27R" not in _alleles(catalog.search(organism="Escherichia coli", limit=100))

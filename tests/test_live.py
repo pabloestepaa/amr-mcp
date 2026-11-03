@@ -25,6 +25,15 @@ async def test_fetch_kpc2_protein():
     assert 280 <= seq["length"] <= 300
 
 
+async def test_kpc2_hosts():
+    ncbi = NCBIClient()
+    try:
+        hosts = await ncbi.protein_hosts("WP_004199234.1", top=3)
+    finally:
+        await ncbi.aclose()
+    assert hosts["top_species"][0]["species"] == "Klebsiella pneumoniae"
+
+
 async def test_pubmed_summary():
     ncbi = NCBIClient()
     try:
