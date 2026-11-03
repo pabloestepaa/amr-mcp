@@ -1,5 +1,5 @@
-# Publishes to PyPI and the MCP Registry when a version tag (v0.1.0, v0.2.0...) is pushed.
-# No secrets needed: both use GitHub OIDC (PyPI "trusted publishing").
+# Publishes to PyPI, the MCP Registry and GitHub Releases when a version tag (v0.1.0, v0.2.0...) is pushed.
+# No secrets needed: PyPI and the MCP Registry use GitHub OIDC (PyPI "trusted publishing"), the Release uses the built-in token.
 name: Release
 on:
   push:
@@ -78,3 +78,20 @@ jobs:
             sleep 30
           done
           exit 1
+
+  github-release:
+    needs: pypi
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      # Skips tags that already have a Release (e.g. one written by hand before pushing the tag).
+      - name: Create GitHub Release with generated notes
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "Release $GITHUB_REF_NAME already exists"
+          else
+            gh release create "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --verify-tag --generate-notes
+          fi
