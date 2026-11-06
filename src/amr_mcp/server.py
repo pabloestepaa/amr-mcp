@@ -30,7 +30,43 @@ protein accession. Use group_by_family for broad searches. Drug classes are uppe
 
 READ_ONLY = ToolAnnotations(readOnlyHint=True, openWorldHint=True)
 
-mcp = MCPServer("amr-mcp", instructions=INSTRUCTIONS)
+
+class StrictArgsServer(MCPServer):
+    """An MCPServer that rejects arguments a tool does not declare.
+
+    The SDK silently drops unknown arguments, so a model that invents one (e.g. `gene_family` on
+    search_amr_genes) gets results that ignore what it asked for, with no hint that anything
+    went wrong. Instead, it gets an error naming the valid arguments and can fix the call.
+    Unknown arguments set to null are dropped quietly: they mean "no filter" and change nothing.
+
+    This is checked here rather than with `additionalProperties: false` in the input schema,
+    because some LLM providers validate tool calls against the schema themselves and reject the
+    whole request, which the model cannot recover from.
+    """
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+        self._arg_names: dict[str, frozenset[str]] = {}
+
+    async def _declared_args(self, name: str) -> frozenset[str] | None:
+        if name not in self._arg_names:
+            self._arg_names = {t.name: frozenset((t.input_schema or {}).get("properties", {}))
+                               for t in await self.list_tools()}
+        return self._arg_names.get(name)  # None: unknown tool, the SDK reports it
+
+    async def call_tool(self, name: str, arguments: dict[str, Any], context: Any = None) -> Any:
+        declared = await self._declared_args(name)
+        if declared is not None:
+            unknown = sorted(k for k, v in arguments.items() if k not in declared and v is not None)
+            if unknown:
+                valid = ", ".join(sorted(declared)) or "none"
+                raise ToolError(f"Unknown argument(s) for {name}: {', '.join(unknown)}. "
+                                f"Valid arguments: {valid}.")
+            arguments = {k: v for k, v in arguments.items() if k in declared}
+        return await super().call_tool(name, arguments, context)
+
+
+mcp = StrictArgsServer("amr-mcp", instructions=INSTRUCTIONS)
 
 
 class _State:
